@@ -34,6 +34,7 @@ namespace Reproductor
         WaveOutEvent output;
 
         DispatcherTimer timer;
+        VolumeSampleProvider volume;
 
         bool draggin = false;
         
@@ -108,7 +109,11 @@ namespace Reproductor
 
                 output.PlaybackStopped += Output_PlaybackStopped;
 
-                output.Init(reader);
+
+                volume = new VolumeSampleProvider(reader);
+
+                volume.Volume = (float)sldVolumen.Value;
+                output.Init(volume);
                 output.Play();
 
                 btnDetener.IsEnabled = true;
@@ -131,6 +136,7 @@ namespace Reproductor
         {
             reader.Dispose();
             output.Dispose();
+            timer.Stop();
         }
 
         private void btnPausa_Click(object sender, RoutedEventArgs e)
@@ -167,6 +173,17 @@ namespace Reproductor
             {
                 reader.CurrentTime = TimeSpan.FromSeconds(sldReproduccion.Value);
 
+            }
+        }
+
+        private void sldVolumen_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (volume != null && output != null && output.PlaybackState != PlaybackState.Stopped)
+            {
+
+                volume.Volume = (float)sldVolumen.Value;
+
+                lblPorcentajeVolumen.Text = ((int)(sldVolumen.Value * 100)).ToString() + " %";
             }
         }
     }
